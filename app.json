@@ -1,0 +1,60 @@
+{
+  "configVersion": "v3",
+  "app": {
+    "appId": 1099993,
+    "appName": "StretchCoach",
+    "appType": "app",
+    "version": {
+      "code": 2,
+      "name": "1.0.1"
+    },
+    "icon": "icon.png",
+    "vender": "zepp",
+    "description": "Stretch coach for post-workout recovery"
+  },
+  "permissions": [
+    "device:os.local_storage",
+    "data:os.device.info",
+    "data:user.hd.workout"
+  ],
+  "runtime": {
+    "apiVersion": {
+      "compatible": "3.0.0",
+      "target": "3.0.0",
+      "minVersion": "3.0"
+    }
+  },
+  "debug": false,
+  "targets": {
+    "gt": {
+      "module": {
+        "page": {
+          "pages": [
+            "page/home/home",
+            "page/select/select",
+            "page/safety/safety",
+            "page/session/session",
+            "page/complete/complete",
+            "page/settings/settings"
+          ]
+        }
+      },
+      "platforms": [
+        {
+          "st": "r",
+          "dw": 480
+        },
+        {
+          "st": "s",
+          "dw": 390
+        }
+      ]
+    }
+  },
+  "i18n": {
+    "en-US": {
+      "appName": "StretchCoach"
+    }
+  },
+  "defaultLanguage": "en-US"
+}
