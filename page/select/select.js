@@ -57,15 +57,8 @@ Page({
 
       // Category header
       group.createWidget(widget.TEXT, {
-        x: px(62),
+        ...Styles.CATEGORY_TEXT_STYLE,
         y: yOffset,
-        w: px(440),
-        h: px(35),
-        color: 0xf48839,
-        text_size: px(20),
-        align_h: 0,
-        align_v: 2,
-        text_style: 0,
         text: cat.name
       });
       yOffset += Styles.CATEGORY_H;

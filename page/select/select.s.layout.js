@@ -40,6 +40,18 @@ export const CATEGORY_ICON_STYLE = {
   h: px(26)
 };
 
+export const CATEGORY_TEXT_STYLE = {
+  x: px(56),
+  y: 0,
+  w: px(314),
+  h: px(34),
+  color: 0xf48839,
+  text_size: px(18),
+  align_h: 0,
+  align_v: 2,
+  text_style: 0
+};
+
 export const SPORT_ICON_STYLE = {
   x: px(24),
   y: 0,

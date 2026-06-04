@@ -17,6 +17,8 @@ export const TITLE_STYLE = {
 
 export const LIST_START_Y = px(92);
 export const CATEGORY_H = px(38);
+export const CATEGORY_TEXT_X = px(74);
+export const CATEGORY_TEXT_W = px(386);
 export const LIST_ITEM_H = px(68);
 export const CATEGORY_GAP = px(12);
 export const BOTTOM_PADDING = px(36);
@@ -35,6 +37,18 @@ export const CATEGORY_ICON_STYLE = {
   y: 0,
   w: px(28),
   h: px(28)
+};
+
+export const CATEGORY_TEXT_STYLE = {
+  x: px(74),
+  y: 0,
+  w: px(386),
+  h: px(35),
+  color: 0xf48839,
+  text_size: px(20),
+  align_h: 0,
+  align_v: 2,
+  text_style: 0
 };
 
 export const SPORT_ICON_STYLE = {
