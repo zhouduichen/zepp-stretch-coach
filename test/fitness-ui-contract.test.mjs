@@ -29,6 +29,32 @@ function exportedPxValue(source, name) {
   return Number(match[1]);
 }
 
+function roundSafeEdgeAtCenterY(y, h, size) {
+  const radius = size / 2;
+  const centerY = y + h / 2;
+  const dy = Math.abs(centerY - radius);
+  return radius - Math.sqrt((radius * radius) - (dy * dy));
+}
+
+function assertRoundSafeRect(layout, styleName, margin = 8, yOverride = null) {
+  const screenW = exportedPxValue(layout, "W");
+  const x = pxValue(layout, styleName, "x");
+  const y = yOverride ?? pxValue(layout, styleName, "y");
+  const w = pxValue(layout, styleName, "w");
+  const h = pxValue(layout, styleName, "h");
+  const safeLeft = roundSafeEdgeAtCenterY(y, h, screenW) + margin;
+  const safeRight = screenW - safeLeft;
+
+  assert.ok(
+    x >= safeLeft,
+    `${styleName} starts at ${x}px, outside round safe left ${safeLeft.toFixed(1)}px`
+  );
+  assert.ok(
+    x + w <= safeRight,
+    `${styleName} ends at ${x + w}px, outside round safe right ${safeRight.toFixed(1)}px`
+  );
+}
+
 describe("fitness UI visual contract", () => {
   it("uses a generated quiet fitness background instead of the old busy art", () => {
     const source = read("scripts/generate-assets.ps1");
@@ -124,6 +150,42 @@ describe("fitness UI visual contract", () => {
     assert.ok(startY - cat3Bottom >= 16, `category-to-start gap too small: ${startY - cat3Bottom}px`);
     assert.ok(guideY - startBottom >= 8, `start-to-guide gap too small: ${guideY - startBottom}px`);
     assert.ok(guideBottom < screenH, `guide bottom ${guideBottom} exceeds screen ${screenH}`);
+  });
+
+  it("keeps the round home layout inside the circular visible area", () => {
+    const layout = read("page/home/home.r.layout.js");
+
+    for (const styleName of [
+      "PROGRESS_LABEL_STYLE",
+      "PROGRESS_VALUE_STYLE",
+      "PROGRESS_BG_STYLE",
+      "START_BTN_STYLE",
+      "GUIDE_BTN_STYLE",
+      "VIBRATION_BTN_STYLE"
+    ]) {
+      assertRoundSafeRect(layout, styleName);
+    }
+
+    for (const y of [
+      exportedPxValue(layout, "CAT1_Y"),
+      exportedPxValue(layout, "CAT2_Y"),
+      exportedPxValue(layout, "CAT3_Y")
+    ]) {
+      assertRoundSafeRect(layout, "CAT_CARD_STYLE", 8, y);
+    }
+  });
+
+  it("keeps square home layout as a separate wide rectangular composition", () => {
+    const layout = read("page/home/home.s.layout.js");
+    const cardX = pxValue(layout, "CAT_CARD_STYLE", "x");
+    const cardW = pxValue(layout, "CAT_CARD_STYLE", "w");
+    const startX = pxValue(layout, "START_BTN_STYLE", "x");
+    const startW = pxValue(layout, "START_BTN_STYLE", "w");
+
+    assert.ok(cardX <= 24, `square category cards should use the square screen width, got x=${cardX}`);
+    assert.ok(cardX + cardW >= 360, `square category cards are too narrow: ${cardX + cardW}px`);
+    assert.ok(startX <= 24, `square START button should remain aligned to square margins, got x=${startX}`);
+    assert.ok(startX + startW >= 360, `square START button is too narrow: ${startX + startW}px`);
   });
 
   it("removes the old loud orange UI accent from page layouts", () => {

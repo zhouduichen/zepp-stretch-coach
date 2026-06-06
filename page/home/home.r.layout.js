@@ -6,9 +6,9 @@ export const H = px(480);
 
 // Weekly progress bar
 export const PROGRESS_LABEL_STYLE = {
-  x: px(40),
-  y: px(36),
-  w: px(200),
+  x: px(104),
+  y: px(48),
+  w: px(170),
   h: px(24),
   color: 0xffffff,
   text_size: px(16),
@@ -18,9 +18,9 @@ export const PROGRESS_LABEL_STYLE = {
 };
 
 export const PROGRESS_VALUE_STYLE = {
-  x: px(390),
-  y: px(36),
-  w: px(50),
+  x: px(292),
+  y: px(48),
+  w: px(84),
   h: px(24),
   color: 0xb6f640,
   text_size: px(16),
@@ -30,27 +30,27 @@ export const PROGRESS_VALUE_STYLE = {
 };
 
 export const PROGRESS_BG_STYLE = {
-  x: px(40),
-  y: px(66),
-  w: px(400),
+  x: px(104),
+  y: px(78),
+  w: px(272),
   h: px(6),
   color: 0x1e251f
 };
 
 export const PROGRESS_FILL_STYLE = {
-  x: px(40),
-  y: px(66),
-  w: px(268),
+  x: px(104),
+  y: px(78),
+  w: px(182),
   h: px(6),
   color: 0xb6f640
 };
 
 // Category cards
 export const CAT_CARD_STYLE = {
-  x: px(40),
+  x: px(56),
   y: 0,
-  w: px(400),
-  h: px(72)
+  w: px(368),
+  h: px(68)
 };
 
 export const CAT_ICON_STYLE = {
@@ -85,10 +85,10 @@ export const CAT_SUB_STYLE = {
 };
 
 export const CAT_ARROW_STYLE = {
-  x: px(400),
+  x: px(384),
   y: 0,
   w: px(24),
-  h: px(72),
+  h: px(68),
   color: 0xb6f640,
   text_size: px(22),
   align_h: align.CENTER_H,
@@ -97,15 +97,15 @@ export const CAT_ARROW_STYLE = {
 };
 
 // Card Y offsets
-export const CAT1_Y = px(92);
-export const CAT2_Y = px(172);
-export const CAT3_Y = px(252);
+export const CAT1_Y = px(104);
+export const CAT2_Y = px(182);
+export const CAT3_Y = px(260);
 
 // Green START button
 export const START_BTN_STYLE = {
-  x: px(40),
-  y: px(340),
-  w: px(400),
+  x: px(140),
+  y: px(344),
+  w: px(200),
   h: px(60),
   src: "btn_start.png"
 };

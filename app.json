@@ -31,6 +31,8 @@
         "page": {
           "pages": [
             "page/home/home",
+            "page/category/category",
+            "page/mode-pick/mode-pick",
             "page/select/select",
             "page/safety/safety",
             "page/session/session",

@@ -13,6 +13,14 @@ function read(path) {
 }
 
 describe("category and mode-pick routing", () => {
+  it("registers category and mode-pick pages in app.json", () => {
+    const app = JSON.parse(read("app.json"));
+    const pages = app.targets.gt.module.page.pages;
+
+    assert.ok(pages.includes("page/category/category"));
+    assert.ok(pages.includes("page/mode-pick/mode-pick"));
+  });
+
   it("home category cards push to category page with categoryId from dynamic data", () => {
     const home = read("page/home/home.js");
 
