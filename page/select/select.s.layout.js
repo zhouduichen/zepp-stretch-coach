@@ -1,5 +1,5 @@
 import { px } from "@zos/utils";
-import { setStatusBarVisible } from '@zos/ui';
+import { align, setStatusBarVisible } from "@zos/ui";
 
 setStatusBarVisible(false);
 
@@ -13,8 +13,8 @@ export const TITLE_STYLE = {
   h: px(40),
   color: 0xffffff,
   text_size: px(28),
-  align_h: 2,
-  align_v: 2,
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
@@ -29,68 +29,78 @@ export const ROW_BG_STYLE = {
   y: 0,
   w: px(362),
   h: px(60),
-  color: 0x071525,
-  alpha: 35
+  color: 0x141a15,
+  alpha: 1
+};
+
+export const ROW_CARD_STYLE = {
+  x: px(14),
+  y: 0,
+  w: px(362),
+  h: px(60),
+  src: "row_card.png"
 };
 
 export const CATEGORY_ICON_STYLE = {
   x: px(24),
   y: 0,
-  w: px(26),
-  h: px(26)
+  w: px(24),
+  h: px(24)
 };
 
+export const CATEGORY_ICON_OFFSET_Y = px(5);
+
 export const CATEGORY_TEXT_STYLE = {
-  x: px(56),
+  x: px(74),
   y: 0,
-  w: px(314),
+  w: px(280),
   h: px(34),
-  color: 0xf48839,
+  color: 0xb6f640,
   text_size: px(18),
-  align_h: 0,
-  align_v: 2,
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
 export const SPORT_ICON_STYLE = {
   x: px(24),
   y: 0,
-  w: px(44),
-  h: px(44)
+  w: px(38),
+  h: px(38)
 };
 
 export const ITEM_TEXT_STYLE = {
-  x: px(78),
-  y: 0,
-  w: px(200),
+  x: px(96),
+  y: px(2),
+  w: px(168),
   h: px(36),
   color: 0xffffff,
   text_size: px(19),
-  align_h: 0,
-  align_v: 2,
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
 export const ITEM_SUB_STYLE = {
-  x: px(78),
-  y: px(29),
-  w: px(160),
-  h: px(28),
-  color: 0x888888,
+  x: px(96),
+  y: px(34),
+  w: px(132),
+  h: px(26),
+  color: 0x9aa497,
   text_size: px(16),
-  align_h: 0,
-  align_v: 2,
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
 export const RECOMMEND_TAG_STYLE = {
-  x: px(292),
+  x: px(296),
   y: px(15),
-  w: px(62),
+  w: px(60),
   h: px(24),
-  color: 0xf48839,
+  color: 0xb6f640,
   text_size: px(14),
-  align_h: 2,
-  align_v: 2,
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };

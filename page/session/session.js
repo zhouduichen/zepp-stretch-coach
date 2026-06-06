@@ -21,6 +21,7 @@ Page({
     timerText: null,
     progressText: null,
     pausedGroup: null,
+    lastAnimationKey: null,
     lastTickSecond: -1,
     lastIntervalTickSecond: -1
   },
@@ -31,6 +32,12 @@ Page({
     const params = JSON.parse(options || "{}");
     const sportId = params.sportId || "run-outdoor";
     const routineType = params.routineType || "quick";
+    this._sportId = sportId;
+    this._routineType = routineType;
+    this.state._lastExerciseName = null;
+    this.state._lastSideLabel = null;
+    this.state._lastTimerText = null;
+    this.state._lastProgressText = null;
 
     Vibration.setMode(Storage.get(Storage.KEYS.VIBRATION_MODE, "standard"));
 
@@ -74,7 +81,7 @@ Page({
 
   _ensureTickTimer() {
     if (this.state.timerId || !this.state.machine) return;
-    this.state.timerId = setInterval(() => this.state.machine.tick(), 500);
+    this.state.timerId = setInterval(() => this.state.machine.tick(), 1000);
   },
 
   _clearTickTimer() {
@@ -132,8 +139,6 @@ Page({
   },
 
   _onStateChange(oldState, newState) {
-    console.log(`Session: ${oldState} -> ${newState}`);
-
     if (newState === STATE_PAUSED) {
       this._clearTickTimer();
     } else if (oldState === STATE_PAUSED) {
@@ -148,11 +153,15 @@ Page({
 
     if (info.action === "prepare") {
       Vibration.clearAll();
-      this._loadAnimation(info.exerciseId);
+      this._loadAnimation(info.exerciseId, info.side);
     } else if (info.action === "start") {
+      this._loadAnimation(info.exerciseId, info.side);
       Vibration.exerciseStart();
-    } else if (info.action === "side_switch") {
-      Vibration.sideSwitch();
+    } else if (info.action === "side_switch" || info.action === "side_start") {
+      this._loadAnimation(info.exerciseId, info.side);
+      if (info.action === "side_switch") {
+        Vibration.sideSwitch();
+      }
     }
   },
 
@@ -199,10 +208,14 @@ Page({
     this.state.completionNavTimer = setTimeout(() => {
       replace({
         url: "/page/complete/complete",
-        params: {
+        params: JSON.stringify({
           completed: info.completed,
-          reason: info.reason
-        }
+          reason: info.reason,
+          sportId: this._sportId || "",
+          routineType: this._routineType || "quick",
+          totalSteps: this.state.machine.steps.length,
+          totalDuration: this._computeTotalDuration()
+        })
       });
     }, info.completed ? 1250 : 0);
   },
@@ -216,7 +229,11 @@ Page({
 
     const ex = getExercise(step.exerciseId);
     if (this.state.exerciseNameText && ex) {
-      this.state.exerciseNameText.setProperty(prop.MORE, { text: ex.name });
+      const name = ex.name;
+      if (this.state._lastExerciseName !== name) {
+        this.state._lastExerciseName = name;
+        this.state.exerciseNameText.setProperty(prop.MORE, { text: name });
+      }
     }
 
     if (this.state.sideText) {
@@ -225,30 +242,53 @@ Page({
       else if (ctx.substep === "side-switch") sideLabel = "Switch sides...";
       else if (ctx.side === "left") sideLabel = "Left side";
       else if (ctx.side === "right") sideLabel = "Right side";
-      this.state.sideText.setProperty(prop.MORE, { text: sideLabel });
+
+      if (this.state._lastSideLabel !== sideLabel) {
+        this.state._lastSideLabel = sideLabel;
+        this.state.sideText.setProperty(prop.MORE, { text: sideLabel });
+      }
     }
 
     if (this.state.timerText) {
       const remaining = Math.max(0, Math.ceil((this.state.machine.deadline - Date.now()) / 1000));
-      this.state.timerText.setProperty(prop.MORE, { text: String(remaining) });
+      const text = String(remaining);
+      if (this.state._lastTimerText !== text) {
+        this.state._lastTimerText = text;
+        this.state.timerText.setProperty(prop.MORE, { text });
+      }
     }
 
     if (this.state.progressText) {
       const total = this.state.machine.steps.length;
       const current = Math.min(this.state.machine.currentStepIndex + 1, total);
-      this.state.progressText.setProperty(prop.MORE, { text: `${current} / ${total}` });
+      const text = `${current} / ${total}`;
+      if (this.state._lastProgressText !== text) {
+        this.state._lastProgressText = text;
+        this.state.progressText.setProperty(prop.MORE, { text });
+      }
     }
   },
 
-  _loadAnimation(exerciseId) {
-    this._destroyAnimation();
+  _resolveAnimationPrefix(ex, side) {
+    if (ex.sides === "single" && (side === "left" || side === "right")) {
+      return `${ex.animPrefix}_${side}`;
+    }
+    return ex.animPrefix;
+  },
 
+  _loadAnimation(exerciseId, side) {
     const ex = getExercise(exerciseId);
     if (!ex) return;
 
+    const animationPrefix = this._resolveAnimationPrefix(ex, side);
+    const animationKey = `${animationPrefix}:${ex.animFrames || 4}:${ex.animFps || 3}`;
+    if (this.state.animWidget && this.state.lastAnimationKey === animationKey) return;
+
+    this._destroyAnimation();
+
     try {
       this.state.animWidget = createWidget(widget.IMG_ANIM, {
-        anim_path: `animations/${ex.animPrefix}`,
+        anim_path: `animations/${animationPrefix}`,
         anim_prefix: "f",
         anim_ext: "png",
         anim_fps: ex.animFps || 3,
@@ -262,6 +302,7 @@ Page({
         auto_scale: true,
         auto_scale_obj_fit: true
       });
+      this.state.lastAnimationKey = animationKey;
       this.state.animWidget.setProperty(prop.ANIM_STATUS, anim_status.START);
     } catch (e) {
       console.log(`Animation load error: ${e}`);
@@ -278,6 +319,20 @@ Page({
       console.log(`Animation destroy error: ${e}`);
     }
     this.state.animWidget = null;
+    this.state.lastAnimationKey = null;
+  },
+
+  _computeTotalDuration() {
+    let total = 0;
+    for (const step of this.state.machine.steps) {
+      const dur = step.duration || 30;
+      if (step.side === "single") {
+        total += 3 + dur + 3 + dur;
+      } else {
+        total += 3 + dur;
+      }
+    }
+    return total;
   },
 
   onDestroy() {

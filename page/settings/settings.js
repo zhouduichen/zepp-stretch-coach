@@ -1,4 +1,4 @@
-import { createWidget, widget, event, prop } from "@zos/ui";
+import { align, createWidget, widget, event, prop } from "@zos/ui";
 import * as Styles from "zosLoader:./settings.[pf].layout.js";
 import * as Common from "zosLoader:./../common.[pf].layout.js";
 import { back } from "@zos/router";
@@ -44,8 +44,8 @@ Page({
       h: px(35),
       color: 0xffffff,
       text_size: px(22),
-      align_h: 0,
-      align_v: 2,
+      align_h: align.LEFT,
+      align_v: align.CENTER_V,
       text_style: 0,
       text: "Vibration"
     });
@@ -55,10 +55,10 @@ Page({
       y: Styles.OPTION_START_Y + px(30),
       w: px(300),
       h: px(30),
-      color: 0xb8ff3d,
+      color: 0xb6f640,
       text_size: px(18),
-      align_h: 0,
-      align_v: 2,
+      align_h: align.LEFT,
+      align_v: align.CENTER_V,
       text_style: 0,
       text: `${opt.label} - ${opt.desc}`
     });

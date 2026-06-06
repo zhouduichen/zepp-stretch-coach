@@ -24,9 +24,12 @@ const REQUIRED_UI = [
   "btn_settings.png",
   "btn_skip.png",
   "btn_start.png",
+  "card_progress.png",
+  "card_trend.png",
   "icon.png",
   "icon_complete.png",
   "icon_stop.png",
+  "row_card.png",
   "cat_cardio.png",
   "cat_strength.png",
   "cat_ball.png",
@@ -41,9 +44,15 @@ const REQUIRED_UI = [
 ];
 
 const animationFrames = new Map();
+const singleSideAnimationFrames = new Map();
 for (const exercise of EXERCISES) {
   const previous = animationFrames.get(exercise.animPrefix) || 0;
   animationFrames.set(exercise.animPrefix, Math.max(previous, exercise.animFrames));
+
+  if (exercise.sides === "single") {
+    const sidePrevious = singleSideAnimationFrames.get(exercise.animPrefix) || 0;
+    singleSideAnimationFrames.set(exercise.animPrefix, Math.max(sidePrevious, exercise.animFrames));
+  }
 }
 
 const errors = [];
@@ -57,6 +66,13 @@ function requireFile(path) {
   if (statSync(path).size === 0) errors.push(`Empty asset: ${path}`);
 }
 
+function requireAnimationFrames(assetRoot, prefix, count) {
+  for (let index = 0; index < count; index += 1) {
+    requireFile(join(assetRoot, "animations", prefix, `f_${index}.png`));
+    checkedFrames += 1;
+  }
+}
+
 for (const target of TARGETS) {
   const assetRoot = join(ROOT, "assets", target);
   for (const file of REQUIRED_UI) requireFile(join(assetRoot, file));
@@ -66,11 +82,18 @@ for (const target of TARGETS) {
       errors.push(`Animation "${prefix}" has invalid configured frame count: ${count}`);
     }
 
-    for (let index = 0; index < count; index += 1) {
-      requireFile(join(assetRoot, "animations", prefix, `f_${index}.png`));
-      checkedFrames += 1;
+    requireAnimationFrames(assetRoot, prefix, count);
+  }
+
+  for (const [prefix, count] of singleSideAnimationFrames) {
+    for (const side of ["left", "right"]) {
+      requireAnimationFrames(assetRoot, `${prefix}_${side}`, count);
     }
   }
+}
+
+for (const prefix of animationFrames.keys()) {
+  requireFile(join(ROOT, "resources", "symbols", `${prefix}-source.png`));
 }
 
 if (errors.length) {
@@ -79,4 +102,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Asset validation passed: ${REQUIRED_UI.length * TARGETS.length} UI assets and ${checkedFrames} animation frames.`);
+console.log(`Asset validation passed: ${REQUIRED_UI.length * TARGETS.length} UI assets, ${checkedFrames} animation frames, ${animationFrames.size} B-style source sprites, and ${singleSideAnimationFrames.size} side-aware animation sets.`);

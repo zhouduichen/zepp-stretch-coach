@@ -1,5 +1,5 @@
 import { px } from "@zos/utils";
-import { setStatusBarVisible } from '@zos/ui';
+import { align, setStatusBarVisible } from "@zos/ui";
 
 setStatusBarVisible(false);
 
@@ -13,8 +13,8 @@ export const TITLE_STYLE = {
   h: px(40),
   color: 0xffffff,
   text_size: px(28),
-  align_h: 2,
-  align_v: 2,
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
@@ -28,8 +28,8 @@ export const OPTION_LABEL_STYLE = {
   h: px(32),
   color: 0xffffff,
   text_size: px(20),
-  align_h: 0,
-  align_v: 2,
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
@@ -38,10 +38,10 @@ export const OPTION_VALUE_STYLE = {
   y: px(28),
   w: px(260),
   h: px(28),
-  color: 0x888888,
+  color: 0x9aa497,
   text_size: px(16),
-  align_h: 0,
-  align_v: 2,
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 

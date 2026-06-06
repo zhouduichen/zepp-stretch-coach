@@ -11,13 +11,24 @@ Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path $PSScriptRoot -Parent
 $targets = @("gt.r", "gt.s")
-$lime = [System.Drawing.Color]::FromArgb(255, 184, 255, 61)
-$cyan = [System.Drawing.Color]::FromArgb(255, 0, 211, 255)
-$orange = [System.Drawing.Color]::FromArgb(255, 255, 133, 27)
-$red = [System.Drawing.Color]::FromArgb(255, 255, 73, 86)
-$blue = [System.Drawing.Color]::FromArgb(255, 52, 168, 255)
-$white = [System.Drawing.Color]::FromArgb(255, 246, 249, 255)
-$navy = [System.Drawing.Color]::FromArgb(255, 8, 15, 26)
+$fitnessBg = [System.Drawing.Color]::FromArgb(255, 5, 8, 6)
+$fitnessPanel = [System.Drawing.Color]::FromArgb(255, 20, 26, 21)
+$fitnessPanel2 = [System.Drawing.Color]::FromArgb(255, 30, 37, 31)
+$fitnessStroke = [System.Drawing.Color]::FromArgb(255, 72, 84, 70)
+$fitnessGreen = [System.Drawing.Color]::FromArgb(255, 182, 246, 64)
+$fitnessMint = [System.Drawing.Color]::FromArgb(255, 111, 235, 174)
+$fitnessBlue = [System.Drawing.Color]::FromArgb(255, 88, 177, 255)
+$fitnessRose = [System.Drawing.Color]::FromArgb(255, 255, 91, 129)
+$fitnessRed = [System.Drawing.Color]::FromArgb(255, 255, 88, 96)
+$fitnessText = [System.Drawing.Color]::FromArgb(255, 246, 249, 244)
+$fitnessMuted = [System.Drawing.Color]::FromArgb(255, 154, 164, 151)
+$lime = $fitnessGreen
+$cyan = $fitnessMint
+$orange = [System.Drawing.Color]::FromArgb(255, 224, 188, 74)
+$red = $fitnessRed
+$blue = $fitnessBlue
+$white = $fitnessText
+$navy = $fitnessBg
 
 function New-Bitmap([int]$width, [int]$height) {
   return [System.Drawing.Bitmap]::new(
@@ -84,6 +95,72 @@ function Resize-Cover([string]$source, [string]$path, [int]$width, [int]$height)
   Save-Bitmap $bitmap $path
 }
 
+function Draw-FitnessBackground([string]$path, [int]$width, [int]$height) {
+  $bitmap = New-Bitmap $width $height
+  $graphics = New-Graphics $bitmap
+  $graphics.Clear($fitnessBg)
+
+  $leftGlow = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+    [System.Drawing.RectangleF]::new(-$width * 0.35, $height * 0.58, $width * 0.86, $height * 0.58),
+    [System.Drawing.Color]::FromArgb(54, $fitnessGreen),
+    [System.Drawing.Color]::FromArgb(0, $fitnessGreen),
+    [System.Drawing.Drawing2D.LinearGradientMode]::ForwardDiagonal
+  )
+  $graphics.FillEllipse($leftGlow, -$width * 0.35, $height * 0.58, $width * 0.86, $height * 0.58)
+  $leftGlow.Dispose()
+
+  $topGlow = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(20, $fitnessBlue))
+  $graphics.FillEllipse($topGlow, $width * 0.48, -$height * 0.22, $width * 0.75, $height * 0.55)
+  $topGlow.Dispose()
+
+  $centerX = [single]($width * 0.82)
+  $centerY = [single]($height * 0.29)
+  $diameters = @(
+    @{ d = [single]($width * 0.86); color = $fitnessGreen; alpha = 88; width = 7 },
+    @{ d = [single]($width * 0.70); color = $fitnessBlue; alpha = 45; width = 5 },
+    @{ d = [single]($width * 0.54); color = $fitnessRose; alpha = 34; width = 4 }
+  )
+  foreach ($ring in $diameters) {
+    $pen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb($ring.alpha, $ring.color), $ring.width)
+    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $d = $ring.d
+    $graphics.DrawArc($pen, $centerX - ($d / 2), $centerY - ($d / 2), $d, $d, 206, 238)
+    $pen.Dispose()
+  }
+
+  $veil = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(48, 0, 0, 0))
+  $graphics.FillRectangle($veil, 0, 0, $width, $height)
+  $veil.Dispose()
+
+  $graphics.Dispose()
+  Save-Bitmap $bitmap $path
+}
+
+function Draw-CenteredText(
+  $graphics,
+  [string]$text,
+  [System.Drawing.Font]$font,
+  [System.Drawing.Brush]$brush,
+  [System.Drawing.RectangleF]$rect
+) {
+  $format = [System.Drawing.StringFormat]::GenericTypographic.Clone()
+  $format.Alignment = [System.Drawing.StringAlignment]::Near
+  $format.LineAlignment = [System.Drawing.StringAlignment]::Near
+  $format.FormatFlags = $format.FormatFlags -bor [System.Drawing.StringFormatFlags]::NoClip
+  $format.SetMeasurableCharacterRanges(@([System.Drawing.CharacterRange]::new(0, $text.Length)))
+
+  $measureRect = [System.Drawing.RectangleF]::new(0, 0, 1000, 1000)
+  $regions = $graphics.MeasureCharacterRanges($text, $font, $measureRect, $format)
+  $bounds = $regions[0].GetBounds($graphics)
+  $x = [single]($rect.X + (($rect.Width - $bounds.Width) / 2) - $bounds.X)
+  $y = [single]($rect.Y + (($rect.Height - $bounds.Height) / 2) - $bounds.Y)
+
+  $graphics.DrawString($text, $font, $brush, [System.Drawing.PointF]::new($x, $y), $format)
+  $regions[0].Dispose()
+  $format.Dispose()
+}
+
 function Draw-LabelButton(
   [string]$path,
   [int]$width,
@@ -119,15 +196,214 @@ function Draw-LabelButton(
 
   $fontSize = if ($height -lt 48) { 14 } elseif ($width -lt 130) { 15 } else { 17 }
   $font = [System.Drawing.Font]::new("Segoe UI Semibold", $fontSize, [System.Drawing.FontStyle]::Bold)
-  $format = [System.Drawing.StringFormat]::new()
-  $format.Alignment = [System.Drawing.StringAlignment]::Center
-  $format.LineAlignment = [System.Drawing.StringAlignment]::Center
   $textBrush = [System.Drawing.SolidBrush]::new($white)
-  $graphics.DrawString($label, $font, $textBrush, $rect, $format)
+  Draw-CenteredText $graphics $label $font $textBrush $rect
   $textBrush.Dispose()
-  $format.Dispose()
   $font.Dispose()
   $pathShape.Dispose()
+  $graphics.Dispose()
+  Save-Bitmap $bitmap $path
+}
+
+function Draw-FitnessButton(
+  [string]$path,
+  [int]$width,
+  [int]$height,
+  [string]$label,
+  [string]$variant = "secondary"
+) {
+  $bitmap = New-Bitmap $width $height
+  $graphics = New-Graphics $bitmap
+  $graphics.Clear([System.Drawing.Color]::Transparent)
+  $rect = [System.Drawing.RectangleF]::new(1, 1, $width - 2, $height - 2)
+  $shape = New-RoundedRect 1 1 ($width - 2) ($height - 2) ([Math]::Min($height / 2 - 1, 24))
+
+  if ($variant -eq "primary") {
+    $brush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+      $rect,
+      $fitnessGreen,
+      $fitnessMint,
+      [System.Drawing.Drawing2D.LinearGradientMode]::Horizontal
+    )
+    $graphics.FillPath($brush, $shape)
+    $brush.Dispose()
+    $textColor = [System.Drawing.Color]::FromArgb(255, 7, 14, 7)
+  } elseif ($variant -eq "danger") {
+    $fill = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(46, $fitnessRed))
+    $graphics.FillPath($fill, $shape)
+    $fill.Dispose()
+    $pen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(190, $fitnessRed), 2)
+    $graphics.DrawPath($pen, $shape)
+    $pen.Dispose()
+    $textColor = $fitnessText
+  } else {
+    $brush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+      $rect,
+      $fitnessPanel2,
+      $fitnessPanel,
+      [System.Drawing.Drawing2D.LinearGradientMode]::Vertical
+    )
+    $graphics.FillPath($brush, $shape)
+    $brush.Dispose()
+    $pen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(150, $fitnessStroke), 1)
+    $graphics.DrawPath($pen, $shape)
+    $pen.Dispose()
+    $textColor = $fitnessText
+  }
+
+  $fontSize = if ($height -lt 48) { 13 } elseif ($width -lt 130) { 14 } else { 16 }
+  $font = [System.Drawing.Font]::new("Segoe UI Semibold", $fontSize, [System.Drawing.FontStyle]::Bold)
+  $textBrush = [System.Drawing.SolidBrush]::new($textColor)
+  Draw-CenteredText $graphics $label $font $textBrush $rect
+  $textBrush.Dispose()
+  $font.Dispose()
+  $shape.Dispose()
+  $graphics.Dispose()
+  Save-Bitmap $bitmap $path
+}
+
+function Draw-FitnessCardSurface(
+  $graphics,
+  [int]$width,
+  [int]$height
+) {
+  $shadow = New-RoundedRect 5 7 ($width - 10) ($height - 12) 22
+  $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(92, 0, 0, 0))
+  $graphics.FillPath($shadowBrush, $shadow)
+  $shadowBrush.Dispose()
+  $shadow.Dispose()
+
+  $rect = [System.Drawing.RectangleF]::new(2, 1, $width - 4, $height - 4)
+  $shape = New-RoundedRect 2 1 ($width - 4) ($height - 4) 20
+  $brush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+    $rect,
+    [System.Drawing.Color]::FromArgb(245, $fitnessPanel2),
+    [System.Drawing.Color]::FromArgb(238, $fitnessPanel),
+    [System.Drawing.Drawing2D.LinearGradientMode]::Vertical
+  )
+  $graphics.FillPath($brush, $shape)
+  $brush.Dispose()
+
+  $glow = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(18, $fitnessGreen))
+  $graphics.FillEllipse($glow, -$width * 0.18, -$height * 0.30, $width * 0.80, $height * 0.96)
+  $glow.Dispose()
+
+  $pen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(124, $fitnessStroke), 1)
+  $graphics.DrawPath($pen, $shape)
+  $pen.Dispose()
+  $shape.Dispose()
+}
+
+function Draw-ProgressCard([string]$path, [int]$width, [int]$height) {
+  $bitmap = New-Bitmap $width $height
+  $graphics = New-Graphics $bitmap
+  $graphics.Clear([System.Drawing.Color]::Transparent)
+  Draw-FitnessCardSurface $graphics $width $height
+
+  $ringSize = [Math]::Min(50, $height - 28)
+  $x = [single]($width - $ringSize - 18)
+  $y = [single](($height - $ringSize) / 2)
+  $track = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(54, $fitnessMuted), 5)
+  $graphics.DrawEllipse($track, $x, $y, $ringSize, $ringSize)
+  $track.Dispose()
+
+  $progress = [System.Drawing.Pen]::new($fitnessGreen, 6)
+  $progress.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $progress.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $graphics.DrawArc($progress, $x, $y, $ringSize, $ringSize, -90, 252)
+  $progress.Dispose()
+
+  $dotAngle = (-90 + 252) * [Math]::PI / 180
+  $dotX = [single]($x + ($ringSize / 2) + [Math]::Cos($dotAngle) * ($ringSize / 2))
+  $dotY = [single]($y + ($ringSize / 2) + [Math]::Sin($dotAngle) * ($ringSize / 2))
+  $dotBrush = [System.Drawing.SolidBrush]::new($fitnessRose)
+  $graphics.FillEllipse($dotBrush, $dotX - 3, $dotY - 3, 6, 6)
+  $dotBrush.Dispose()
+
+  $graphics.Dispose()
+  Save-Bitmap $bitmap $path
+}
+
+function Draw-TrendCard([string]$path, [int]$width, [int]$height) {
+  $bitmap = New-Bitmap $width $height
+  $graphics = New-Graphics $bitmap
+  $graphics.Clear([System.Drawing.Color]::Transparent)
+  Draw-FitnessCardSurface $graphics $width $height
+
+  $line = [System.Drawing.Drawing2D.GraphicsPath]::new()
+  $line.StartFigure()
+  $line.AddLine($width * 0.48, $height * 0.66, $width * 0.58, $height * 0.52)
+  $line.AddLine($width * 0.68, $height * 0.58, $width * 0.78, $height * 0.34)
+  $line.AddLine($width * 0.90, $height * 0.42, $width * 0.94, $height * 0.26)
+  $shadowPen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(42, $fitnessBlue), 8)
+  $shadowPen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $shadowPen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $shadowPen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+  $graphics.DrawPath($shadowPen, $line)
+  $shadowPen.Dispose()
+
+  $pen = [System.Drawing.Pen]::new($fitnessBlue, 3)
+  $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+  $graphics.DrawPath($pen, $line)
+  $pen.Dispose()
+
+  foreach ($point in @(
+    @{ x = $width * 0.48; y = $height * 0.66; color = $fitnessMuted },
+    @{ x = $width * 0.68; y = $height * 0.58; color = $fitnessGreen },
+    @{ x = $width * 0.78; y = $height * 0.34; color = $fitnessRose },
+    @{ x = $width * 0.94; y = $height * 0.26; color = $fitnessBlue }
+  )) {
+    $brush = [System.Drawing.SolidBrush]::new($point.color)
+    $pointX = [single]$point.x
+    $pointY = [single]$point.y
+    $graphics.FillEllipse($brush, $pointX - 3, $pointY - 3, 6, 6)
+    $brush.Dispose()
+  }
+
+  $line.Dispose()
+  $graphics.Dispose()
+  Save-Bitmap $bitmap $path
+}
+
+function Draw-SelectRowCard([string]$path, [int]$width, [int]$height) {
+  $bitmap = New-Bitmap $width $height
+  $graphics = New-Graphics $bitmap
+  $graphics.Clear([System.Drawing.Color]::Transparent)
+
+  $shadow = New-RoundedRect 4 5 ($width - 8) ($height - 9) 18
+  $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(56, 0, 0, 0))
+  $graphics.FillPath($shadowBrush, $shadow)
+  $shadowBrush.Dispose()
+  $shadow.Dispose()
+
+  $rect = [System.Drawing.RectangleF]::new(1, 1, $width - 3, $height - 4)
+  $shape = New-RoundedRect 1 1 ($width - 3) ($height - 4) 18
+  $fill = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+    $rect,
+    [System.Drawing.Color]::FromArgb(196, 27, 34, 28),
+    [System.Drawing.Color]::FromArgb(172, 14, 20, 16),
+    [System.Drawing.Drawing2D.LinearGradientMode]::Horizontal
+  )
+  $graphics.FillPath($fill, $shape)
+  $fill.Dispose()
+
+  $accent = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(190, $fitnessGreen), 3)
+  $accent.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $accent.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+  $graphics.DrawLine($accent, 13, 14, 13, $height - 17)
+  $accent.Dispose()
+
+  $glow = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(18, $fitnessBlue))
+  $graphics.FillEllipse($glow, $width * 0.62, -$height * 0.25, $width * 0.45, $height * 1.15)
+  $glow.Dispose()
+
+  $stroke = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(82, $fitnessStroke), 1)
+  $graphics.DrawPath($stroke, $shape)
+  $stroke.Dispose()
+  $shape.Dispose()
+
   $graphics.Dispose()
   Save-Bitmap $bitmap $path
 }
@@ -182,7 +458,7 @@ function Draw-Arrow([string]$path, [bool]$next) {
   $bitmap = New-Bitmap 40 40
   $graphics = New-Graphics $bitmap
   $graphics.Clear([System.Drawing.Color]::Transparent)
-  $pen = [System.Drawing.Pen]::new($cyan, 4)
+  $pen = [System.Drawing.Pen]::new($fitnessGreen, 4)
   $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
   $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
   if ($next) {
@@ -203,11 +479,12 @@ function Draw-Arrow([string]$path, [bool]$next) {
   Save-Bitmap $bitmap $path
 }
 
-function Draw-SportIcon([string]$path, [string]$kind, [System.Drawing.Color]$accent) {
-  $size = 64
+function Draw-SportIcon([string]$path, [string]$kind, [System.Drawing.Color]$accent, [int]$size = 64) {
   $bitmap = New-Bitmap $size $size
   $graphics = New-Graphics $bitmap
   $graphics.Clear([System.Drawing.Color]::Transparent)
+  $scale = [single]($size / 64.0)
+  $graphics.ScaleTransform($scale, $scale)
 
   $fill = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(48, $accent))
   $graphics.FillEllipse($fill, 2, 2, 60, 60)
@@ -661,37 +938,46 @@ function Draw-AnimationFrame([string]$path, [string]$prefix, [int]$frame, [int]$
 
 function Generate-UiAssets([string]$target, [int]$screenWidth, [int]$screenHeight) {
   $assetRoot = Join-Path $root "assets\$target"
-  Resize-Cover $BackgroundSource (Join-Path $assetRoot "bg.png") $screenWidth $screenHeight
+  $categoryIconSize = if ($target -eq "gt.r") { 32 } else { 24 }
+  $sportIconSize = if ($target -eq "gt.r") { 42 } else { 38 }
+  $cardWidth = if ($target -eq "gt.r") { 168 } else { 148 }
+  $cardHeight = if ($target -eq "gt.r") { 88 } else { 80 }
+  $rowWidth = if ($target -eq "gt.r") { 432 } else { 362 }
+  $rowHeight = if ($target -eq "gt.r") { 64 } else { 60 }
+  Draw-FitnessBackground (Join-Path $assetRoot "bg.png") $screenWidth $screenHeight
   Resize-Cover $IconSource (Join-Path $assetRoot "icon.png") 256 256
 
-  Draw-CircleIcon (Join-Path $assetRoot "ask.png") 64 "help" $cyan
-  Draw-CircleIcon (Join-Path $assetRoot "btn_pause_red.png") 50 "pause" $red
-  Draw-CircleIcon (Join-Path $assetRoot "icon_complete.png") 80 "check" $lime
-  Draw-CircleIcon (Join-Path $assetRoot "icon_stop.png") 80 "stop" $red
+  Draw-CircleIcon (Join-Path $assetRoot "ask.png") 64 "help" $fitnessGreen
+  Draw-CircleIcon (Join-Path $assetRoot "btn_pause_red.png") 50 "pause" $fitnessRed
+  Draw-CircleIcon (Join-Path $assetRoot "icon_complete.png") 80 "check" $fitnessGreen
+  Draw-CircleIcon (Join-Path $assetRoot "icon_stop.png") 80 "stop" $fitnessRed
   Draw-Arrow (Join-Path $assetRoot "btn_prev.png") $false
   Draw-Arrow (Join-Path $assetRoot "btn_next.png") $true
 
-  Draw-LabelButton (Join-Path $assetRoot "btn_start.png") 200 60 "START STRETCH" $lime $cyan
-  Draw-LabelButton (Join-Path $assetRoot "btn_safety.png") 200 60 "SAFETY GUIDE" $blue $cyan
-  Draw-LabelButton (Join-Path $assetRoot "btn_settings.png") 200 60 "VIBRATION" $orange $red
-  Draw-LabelButton (Join-Path $assetRoot "btn_ok.png") 120 50 "GOT IT" $lime $cyan
-  Draw-LabelButton (Join-Path $assetRoot "btn_home.png") 140 55 "HOME" $blue $cyan
-  Draw-LabelButton (Join-Path $assetRoot "btn_back.png") 100 50 "BACK" $blue $cyan
-  Draw-LabelButton (Join-Path $assetRoot "btn_resume_green.png") 100 50 "RESUME" $lime $cyan
-  Draw-LabelButton (Join-Path $assetRoot "btn_skip.png") 100 50 "SKIP" $blue $cyan
-  Draw-LabelButton (Join-Path $assetRoot "btn_end.png") 100 50 "END" $red $orange $true
+  Draw-FitnessButton (Join-Path $assetRoot "btn_start.png") 200 60 "START" "primary"
+  Draw-FitnessButton (Join-Path $assetRoot "btn_safety.png") 200 60 "GUIDE" "secondary"
+  Draw-FitnessButton (Join-Path $assetRoot "btn_settings.png") 200 60 "VIBRATION" "secondary"
+  Draw-FitnessButton (Join-Path $assetRoot "btn_ok.png") 120 50 "OK" "primary"
+  Draw-FitnessButton (Join-Path $assetRoot "btn_home.png") 140 55 "HOME" "secondary"
+  Draw-FitnessButton (Join-Path $assetRoot "btn_back.png") 100 50 "BACK" "secondary"
+  Draw-FitnessButton (Join-Path $assetRoot "btn_resume_green.png") 100 50 "RESUME" "primary"
+  Draw-FitnessButton (Join-Path $assetRoot "btn_skip.png") 100 50 "SKIP" "secondary"
+  Draw-FitnessButton (Join-Path $assetRoot "btn_end.png") 100 50 "END" "danger"
+  Draw-ProgressCard (Join-Path $assetRoot "card_progress.png") $cardWidth $cardHeight
+  Draw-TrendCard (Join-Path $assetRoot "card_trend.png") $cardWidth $cardHeight
+  Draw-SelectRowCard (Join-Path $assetRoot "row_card.png") $rowWidth $rowHeight
 
-  Draw-SportIcon (Join-Path $assetRoot "cat_cardio.png") "cardio" $lime
-  Draw-SportIcon (Join-Path $assetRoot "cat_strength.png") "strength" $orange
-  Draw-SportIcon (Join-Path $assetRoot "cat_ball.png") "ball" $cyan
-  Draw-SportIcon (Join-Path $assetRoot "sport_run.png") "run" $lime
-  Draw-SportIcon (Join-Path $assetRoot "sport_cycle.png") "cycle" $cyan
-  Draw-SportIcon (Join-Path $assetRoot "sport_strength.png") "strength" $orange
-  Draw-SportIcon (Join-Path $assetRoot "sport_bodyweight.png") "bodyweight" $lime
-  Draw-SportIcon (Join-Path $assetRoot "sport_basketball.png") "basketball" $orange
-  Draw-SportIcon (Join-Path $assetRoot "sport_soccer.png") "soccer" $lime
-  Draw-SportIcon (Join-Path $assetRoot "sport_tennis.png") "tennis" $cyan
-  Draw-SportIcon (Join-Path $assetRoot "sport_badminton.png") "badminton" $blue
+  Draw-SportIcon (Join-Path $assetRoot "cat_cardio.png") "cardio" $fitnessGreen $categoryIconSize
+  Draw-SportIcon (Join-Path $assetRoot "cat_strength.png") "strength" $fitnessGreen $categoryIconSize
+  Draw-SportIcon (Join-Path $assetRoot "cat_ball.png") "ball" $fitnessGreen $categoryIconSize
+  Draw-SportIcon (Join-Path $assetRoot "sport_run.png") "run" $fitnessGreen $sportIconSize
+  Draw-SportIcon (Join-Path $assetRoot "sport_cycle.png") "cycle" $fitnessGreen $sportIconSize
+  Draw-SportIcon (Join-Path $assetRoot "sport_strength.png") "strength" $fitnessGreen $sportIconSize
+  Draw-SportIcon (Join-Path $assetRoot "sport_bodyweight.png") "bodyweight" $fitnessGreen $sportIconSize
+  Draw-SportIcon (Join-Path $assetRoot "sport_basketball.png") "basketball" $fitnessGreen $sportIconSize
+  Draw-SportIcon (Join-Path $assetRoot "sport_soccer.png") "soccer" $fitnessGreen $sportIconSize
+  Draw-SportIcon (Join-Path $assetRoot "sport_tennis.png") "tennis" $fitnessGreen $sportIconSize
+  Draw-SportIcon (Join-Path $assetRoot "sport_badminton.png") "badminton" $fitnessGreen $sportIconSize
 }
 
 $animations = @{
@@ -706,16 +992,6 @@ Generate-UiAssets "gt.r" 480 480
 Generate-UiAssets "gt.s" 390 450
 Resize-Cover $IconSource (Join-Path $root "icon.png") 256 256
 
-foreach ($target in $targets) {
-  foreach ($prefix in $animations.Keys) {
-    $count = $animations[$prefix]
-    for ($frame = 0; $frame -lt $count; $frame += 1) {
-      $path = Join-Path $root "assets\$target\animations\$prefix\f_$frame.png"
-      Draw-AnimationFrame $path $prefix $frame $count
-    }
-  }
-}
-
-& (Join-Path $PSScriptRoot "generate-approved-static-animations.ps1") -AssetRoot (Join-Path $root "assets")
+& (Join-Path $PSScriptRoot "generate-b-style-animations.ps1") -AssetRoot (Join-Path $root "assets")
 
 Write-Host "Generated formal UI assets and $($animations.Values | Measure-Object -Sum | Select-Object -ExpandProperty Sum) frames per screen target."

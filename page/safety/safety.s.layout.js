@@ -1,5 +1,5 @@
 import { px } from "@zos/utils";
-import { setStatusBarVisible } from '@zos/ui';
+import { align, setStatusBarVisible } from "@zos/ui";
 
 setStatusBarVisible(false);
 
@@ -13,8 +13,8 @@ export const TITLE_STYLE = {
   h: px(40),
   color: 0xffffff,
   text_size: px(28),
-  align_h: 2,
-  align_v: 2,
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
@@ -23,10 +23,10 @@ export const CONTENT_STYLE = {
   y: px(70),
   w: px(350),
   h: px(300),
-  color: 0xcccccc,
+  color: 0xc8d0c4,
   text_size: px(18),
-  align_h: 0,
-  align_v: 0,
+  align_h: align.LEFT,
+  align_v: align.TOP,
   text_style: 1
 };
 

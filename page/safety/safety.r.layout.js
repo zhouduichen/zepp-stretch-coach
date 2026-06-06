@@ -1,4 +1,5 @@
 import { px } from "@zos/utils";
+import { align } from "@zos/ui";
 
 export const W = px(480);
 export const H = px(480);
@@ -10,8 +11,8 @@ export const TITLE_STYLE = {
   h: px(50),
   color: 0xffffff,
   text_size: px(32),
-  align_h: 2,
-  align_v: 2,
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
@@ -20,10 +21,10 @@ export const CONTENT_STYLE = {
   y: px(100),
   w: px(400),
   h: px(300),
-  color: 0xcccccc,
+  color: 0xc8d0c4,
   text_size: px(20),
-  align_h: 0,
-  align_v: 0,
+  align_h: align.LEFT,
+  align_v: align.TOP,
   text_style: 1
 };
 

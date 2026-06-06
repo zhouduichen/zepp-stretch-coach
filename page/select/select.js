@@ -33,7 +33,7 @@ Page({
       y: px(0),
       w: Styles.W,
       h: contentHeight,
-      color: 0x050b14
+      color: 0x050806
     });
 
     group.createWidget(widget.IMG, {
@@ -51,7 +51,7 @@ Page({
     for (const cat of CATEGORIES) {
       group.createWidget(widget.IMG, {
         ...Styles.CATEGORY_ICON_STYLE,
-        y: yOffset + px(3),
+        y: yOffset + Styles.CATEGORY_ICON_OFFSET_Y,
         src: `${cat.icon}.png`
       });
 
@@ -68,6 +68,11 @@ Page({
         const itemY = yOffset;
         const onSportSelect = () => this._selectSport(sport.id);
 
+        group.createWidget(widget.IMG, {
+          ...Styles.ROW_CARD_STYLE,
+          y: itemY
+        });
+
         const rowTarget = group.createWidget(widget.FILL_RECT, {
           ...Styles.ROW_BG_STYLE,
           y: itemY
@@ -83,7 +88,7 @@ Page({
 
         const sportName = group.createWidget(widget.TEXT, {
           ...Styles.ITEM_TEXT_STYLE,
-          y: itemY,
+          y: itemY + Styles.ITEM_TEXT_STYLE.y,
           text: sport.shortName || sport.name
         });
         sportName.addEventListener(event.CLICK_UP, onSportSelect);
@@ -94,14 +99,14 @@ Page({
 
         const durationHint = group.createWidget(widget.TEXT, {
           ...Styles.ITEM_SUB_STYLE,
-          y: itemY,
+          y: itemY + Styles.ITEM_SUB_STYLE.y,
           text: durStr
         });
         durationHint.addEventListener(event.CLICK_UP, onSportSelect);
 
         const recommendTag = group.createWidget(widget.TEXT, {
           ...Styles.RECOMMEND_TAG_STYLE,
-          y: itemY,
+          y: itemY + Styles.RECOMMEND_TAG_STYLE.y,
           text: this.recommendedType === "full" ? "Full" : "Quick"
         });
         recommendTag.addEventListener(event.CLICK_UP, onSportSelect);

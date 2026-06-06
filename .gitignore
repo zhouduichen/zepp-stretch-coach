@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 yarn.lock
 package-lock.json
+.superpowers/
+
 selenium-debug.log
 .idea
 .vscode
@@ -13,12 +15,3 @@ selenium-debug.log
 *.ntvs*
 *.njsproj
 *.sln
-
-# Temporary / build artifacts
-tmp/
-sim-debug.log
-resources/
-
-# Prototype exploration scripts (not part of the pipeline)
-scripts/generate-b-style-previews.ps1
-scripts/generate-refined-quad-mask.mjs

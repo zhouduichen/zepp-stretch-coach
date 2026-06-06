@@ -1,66 +1,67 @@
 import { px } from "@zos/utils";
+import { align } from "@zos/ui";
 
 export const W = px(480);
 export const H = px(480);
 
 export const ANIM_STYLE = {
-  x: px(40),
-  y: px(40),
-  w: px(400),
-  h: px(300)
+  x: px(88),
+  y: px(176),
+  w: px(304),
+  h: px(228)
 };
 
 export const EXERCISE_NAME_STYLE = {
   x: px(20),
-  y: px(10),
+  y: px(8),
   w: px(440),
-  h: px(40),
+  h: px(32),
   color: 0xffffff,
-  text_size: px(26),
-  align_h: 2,
-  align_v: 2,
+  text_size: px(24),
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
 export const SIDE_STYLE = {
   x: px(20),
-  y: px(45),
+  y: px(40),
   w: px(440),
-  h: px(30),
-  color: 0xf48839,
-  text_size: px(20),
-  align_h: 2,
-  align_v: 2,
+  h: px(24),
+  color: 0xb6f640,
+  text_size: px(18),
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
 export const TIMER_STYLE = {
   x: px(0),
-  y: px(95),
+  y: px(66),
   w: px(480),
-  h: px(80),
+  h: px(66),
   color: 0xffffff,
-  text_size: px(72),
-  align_h: 2,
-  align_v: 2,
+  text_size: px(60),
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
 export const PROGRESS_STYLE = {
   x: px(0),
-  y: px(180),
+  y: px(136),
   w: px(480),
-  h: px(24),
-  color: 0x888888,
-  text_size: px(18),
-  align_h: 2,
-  align_v: 2,
+  h: px(22),
+  color: 0x9aa497,
+  text_size: px(17),
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 
 export const PAUSE_BTN_STYLE = {
   x: px(480 / 2 - 50 / 2),
-  y: px(390),
+  y: px(420),
   w: px(50),
   h: px(50),
   src: "btn_pause_red.png"
@@ -72,7 +73,7 @@ export const OVERLAY_BG_STYLE = {
   y: px(0),
   w: px(480),
   h: px(480),
-  color: 0x000000,
+  color: 0x050806,
   alpha: 180
 };
 
@@ -83,8 +84,8 @@ export const PAUSED_TEXT_STYLE = {
   h: px(50),
   color: 0xffffff,
   text_size: px(32),
-  align_h: 2,
-  align_v: 2,
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
   text_style: 0
 };
 

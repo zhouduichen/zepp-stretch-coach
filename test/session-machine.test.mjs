@@ -63,6 +63,20 @@ describe("SessionMachine", () => {
       assert.strictEqual(events[1].type, "exerciseChange");
       assert.strictEqual(events[1].action, "prepare");
     });
+
+    it("should include the upcoming side in prepare events", () => {
+      const steps = [
+        { phaseType: "main", exerciseId: "standing-quad-stretch", side: "right", duration: 30 }
+      ];
+      const { events, callbacks } = collectCallbacks();
+      const machine = new SessionMachine(steps, callbacks);
+      machine.start();
+
+      const prepareEvent = events.find(event => event.type === "exerciseChange");
+      assert.ok(prepareEvent, "Expected prepare event");
+      assert.strictEqual(prepareEvent.action, "prepare");
+      assert.strictEqual(prepareEvent.side, "right");
+    });
   });
 
   describe("tick progression", () => {

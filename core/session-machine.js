@@ -195,9 +195,11 @@ export class SessionMachine {
 
     if (this.callbacks.onExerciseChange) {
       const step = this.steps[this.currentStepIndex];
+      const sides = this._getSides(step);
       this.callbacks.onExerciseChange({
         exerciseId: step.exerciseId,
         phaseType: step.phaseType,
+        side: sides[0],
         action: "prepare"
       });
     }
