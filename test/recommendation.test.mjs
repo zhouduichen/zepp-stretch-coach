@@ -5,7 +5,11 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { recommendRoutine, estimateDuration } from "../core/recommendation.js";
+import {
+  recommendRoutine,
+  estimateDuration,
+  recommendFromRecentWorkout
+} from "../core/recommendation.js";
 import { getExercise } from "../data/exercises.js";
 
 describe("Recommendation Engine", () => {
@@ -51,6 +55,36 @@ describe("Recommendation Engine", () => {
         { exerciseId: "standing-quad-stretch", side: "left", duration: 30 }
       ]);
       assert.strictEqual(duration, 33);
+    });
+  });
+
+  describe("recommendFromRecentWorkout", () => {
+    it("builds a direct full routine recommendation from the last workout sport and duration", () => {
+      const result = recommendFromRecentWorkout({
+        hasWorkout: true,
+        sportId: "cycle-indoor",
+        durationSeconds: 3600
+      });
+
+      assert.ok(result, "Should return a clickable recommendation");
+      assert.strictEqual(result.sportId, "cycle-indoor");
+      assert.strictEqual(result.routineType, "full");
+      assert.strictEqual(result.source, "last-workout");
+      assert.ok(result.durationMinutes > 0, "Should expose a visible duration estimate");
+      assert.ok(result.steps.length > 0, "Should include resolved session steps");
+    });
+
+    it("falls back to a default sport while preserving the duration-based routine type", () => {
+      const result = recommendFromRecentWorkout({
+        hasWorkout: true,
+        sportId: "unknown",
+        durationSeconds: 600
+      });
+
+      assert.ok(result, "Should still return a one-tap fallback recommendation");
+      assert.strictEqual(result.sportId, "run-outdoor");
+      assert.strictEqual(result.routineType, "quick");
+      assert.strictEqual(result.source, "fallback");
     });
   });
 });

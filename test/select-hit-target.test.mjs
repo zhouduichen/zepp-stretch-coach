@@ -69,6 +69,35 @@ describe("Select Activity hit targets", () => {
     assert.match(source, /Math\.max\(Styles\.H,\s*height \+ Styles\.BOTTOM_PADDING\)/);
   });
 
+  it("renders a one-tap recent-workout recommendation before the activity list", () => {
+    const source = readFileSync(join(ROOT, "page", "select", "select.js"), "utf8");
+    const roundLayout = readSelectLayout("r");
+    const squareLayout = readSelectLayout("s");
+
+    assert.match(source, /getLastWorkoutSummary/);
+    assert.match(source, /recommendFromRecentWorkout/);
+    assert.match(source, /_buildRecommendationCard/);
+    assert.match(source, /Recommended/);
+    assert.match(source, /START/);
+    assert.match(source, /this\._selectSport\(this\.recommendation\.sportId,\s*this\.recommendation\.routineType\)/);
+
+    assert.match(roundLayout, /RECOMMENDATION_CARD_STYLE/);
+    assert.match(roundLayout, /RECOMMENDATION_CTA_STYLE/);
+    assert.match(squareLayout, /RECOMMENDATION_CARD_STYLE/);
+    assert.match(squareLayout, /RECOMMENDATION_CTA_STYLE/);
+  });
+
+  it("lets workout history resolve official workout subtype fields when available", () => {
+    const source = readFileSync(join(ROOT, "services", "workout-history.js"), "utf8");
+
+    assert.match(source, /SUBTYPE_SPORT_IDS/);
+    assert.match(source, /subType/);
+    assert.match(source, /"1":\s*"run-outdoor"/);
+    assert.match(source, /"2":\s*"run-indoor"/);
+    assert.match(source, /"85":\s*"basketball"/);
+    assert.match(source, /"92":\s*"badminton"/);
+  });
+
   it("keeps Select Activity icons, labels, and tags from overlapping", () => {
     for (const shape of ["r", "s"]) {
       const layout = readSelectLayout(shape);

@@ -37,45 +37,51 @@ Page({
       src: "bg.png"
     });
 
-    // Title
-    group.createWidget(widget.TEXT, {
-      ...Styles.TITLE_STYLE,
-      text: this.completed ? "Great job!" : "早退了"
+    group.createWidget(widget.IMG, {
+      ...Styles.RESULT_BADGE_STYLE,
+      src: this.completed ? "icon_complete.png" : "icon_stop.png"
     });
 
-    // Subtitle: sport name + mode
+    group.createWidget(widget.TEXT, {
+      ...Styles.TITLE_STYLE,
+      text: this.completed ? "Great job!" : "Ended early"
+    });
+
     const sport = getSport(this.sportId);
     const sportName = sport ? (sport.shortName || sport.name) : "";
     const modeLabel = this.routineType === "quick" ? "Quick" : "Full";
     group.createWidget(widget.TEXT, {
       ...Styles.SUBTITLE_STYLE,
-      text: sportName ? `${sportName} · ${modeLabel}` : ""
+      text: sportName ? `${sportName} · ${modeLabel}` : modeLabel
     });
 
-    // Status
     group.createWidget(widget.TEXT, {
       ...Styles.STATUS_STYLE,
-      text: this.completed ? "所有拉伸已完成" : "训练提前结束"
+      color: this.completed ? Styles.STATUS_STYLE.color : 0xff5b81,
+      text: this.completed ? "Stretch complete" : "Session stopped"
     });
 
-    // Summary card background
     group.createWidget(widget.FILL_RECT, {
       ...Styles.SUMMARY_CARD_STYLE,
       color: 0x141a15,
-      alpha: 220
+      alpha: 230
     });
 
-    // Steps count
+    group.createWidget(widget.FILL_RECT, {
+      ...Styles.SUMMARY_ACCENT_STYLE,
+      color: this.completed ? 0xb6f640 : 0xff5b81,
+      alpha: 235
+    });
+
     group.createWidget(widget.TEXT, {
       ...Styles.SUMMARY_VALUE_1_STYLE,
       text: `${this.totalSteps}`
     });
     group.createWidget(widget.TEXT, {
       ...Styles.SUMMARY_LABEL_1_STYLE,
-      text: "动作"
+      text: "Moves"
     });
 
-    // Duration
     const min = this.totalDuration > 0 ? Math.ceil(this.totalDuration / 60) : 0;
     group.createWidget(widget.TEXT, {
       ...Styles.SUMMARY_VALUE_2_STYLE,
@@ -83,10 +89,9 @@ Page({
     });
     group.createWidget(widget.TEXT, {
       ...Styles.SUMMARY_LABEL_2_STYLE,
-      text: "时长"
+      text: "Time"
     });
 
-    // Weekly progress
     const count = Storage.get(Storage.KEYS.COMPLETION_COUNT, 0);
     group.createWidget(widget.TEXT, {
       ...Styles.SUMMARY_VALUE_3_STYLE,
@@ -94,10 +99,9 @@ Page({
     });
     group.createWidget(widget.TEXT, {
       ...Styles.SUMMARY_LABEL_3_STYLE,
-      text: "本周"
+      text: "Week"
     });
 
-    // HOME button
     const btnHome = group.createWidget(widget.IMG, Styles.HOME_BTN_STYLE);
     btnHome.addEventListener(event.CLICK_UP, () => {
       replace({ url: "/page/home/home" });

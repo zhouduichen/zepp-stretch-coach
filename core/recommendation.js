@@ -9,6 +9,8 @@ import { getRoutinesBySport, recommendRoutineType, flattenRoutine } from "../dat
 import { getSport } from "../data/sports.js";
 import { getExercise } from "../data/exercises.js";
 
+export const DEFAULT_RECOVERY_SPORT_ID = "run-outdoor";
+
 /**
  * Recommend a routine for the given sport and workout duration.
  *
@@ -81,4 +83,42 @@ export function estimateDuration(steps) {
     }
   }
   return total;
+}
+
+/**
+ * Build the one-tap recommendation shown from recent workout context.
+ *
+ * The workout history API reliably gives us recency and duration. If a sport
+ * can be resolved from the record, use it; otherwise keep the routine one tap
+ * away by falling back to the app's last selected sport or outdoor running.
+ *
+ * @param {object|null} recentWorkout
+ * @param {string} [fallbackSportId]
+ * @returns {object|null}
+ */
+export function recommendFromRecentWorkout(recentWorkout, fallbackSportId = DEFAULT_RECOVERY_SPORT_ID) {
+  const hasWorkout = !!(recentWorkout && recentWorkout.hasWorkout);
+  const recordSportId = recentWorkout && recentWorkout.sportId;
+  const hasRecordSport = !!getSport(recordSportId);
+  const fallbackSport = getSport(fallbackSportId) ? fallbackSportId : DEFAULT_RECOVERY_SPORT_ID;
+  const sportId = hasRecordSport ? recordSportId : fallbackSport;
+  const durationSeconds = hasWorkout ? Math.max(0, recentWorkout.durationSeconds || 0) : undefined;
+  const routineType = durationSeconds !== undefined ? recommendRoutineType(durationSeconds) : "quick";
+  const result = recommendRoutine(sportId, undefined, { routineType });
+
+  if (!result) return null;
+
+  const estimatedSeconds = estimateDuration(result.steps);
+  return {
+    sportId,
+    sport: getSport(sportId),
+    routineType,
+    routine: result.routine,
+    steps: result.steps,
+    durationSeconds: durationSeconds || 0,
+    estimatedSeconds,
+    durationMinutes: estimatedSeconds > 0 ? Math.ceil(estimatedSeconds / 60) : 0,
+    hasWorkout,
+    source: hasRecordSport ? "last-workout" : "fallback"
+  };
 }

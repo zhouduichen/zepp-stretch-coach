@@ -16,7 +16,69 @@ export const TITLE_STYLE = {
   text_style: 0
 };
 
-export const LIST_START_Y = px(92);
+export const RECOMMENDATION_CARD_STYLE = {
+  x: px(54),
+  y: px(92),
+  w: px(372),
+  h: px(118)
+};
+
+export const RECOMMENDATION_ICON_STYLE = {
+  x: px(78),
+  y: px(132),
+  w: px(42),
+  h: px(42)
+};
+
+export const RECOMMENDATION_EYEBROW_STYLE = {
+  x: px(132),
+  y: px(106),
+  w: px(188),
+  h: px(24),
+  color: 0xb6f640,
+  text_size: px(15),
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
+  text_style: 0
+};
+
+export const RECOMMENDATION_TITLE_STYLE = {
+  x: px(132),
+  y: px(130),
+  w: px(190),
+  h: px(34),
+  color: 0xffffff,
+  text_size: px(23),
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
+  text_style: 0
+};
+
+export const RECOMMENDATION_META_STYLE = {
+  x: px(132),
+  y: px(164),
+  w: px(214),
+  h: px(26),
+  color: 0x9aa497,
+  text_size: px(15),
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
+  text_style: 0
+};
+
+export const RECOMMENDATION_CTA_STYLE = {
+  x: px(342),
+  y: px(130),
+  w: px(62),
+  h: px(42),
+  color: 0xb6f640,
+  text_size: px(16),
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
+  text_style: 0
+};
+
+export const LIST_START_Y = px(238);
 export const CATEGORY_H = px(38);
 export const LIST_ITEM_H = px(68);
 export const CATEGORY_GAP = px(12);

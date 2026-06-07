@@ -18,7 +18,7 @@ Page({
 
   build() {
     this.completionCount = Storage.get(Storage.KEYS.COMPLETION_COUNT, 0);
-    const weeklyGoal = this.weeklyGoal;
+    const weeklyGoal = this.state.weeklyGoal || 3;
     const completedForGoal = Math.min(this.completionCount, weeklyGoal);
     const barW = Styles.PROGRESS_BG_STYLE.w;
     const pctWidth = completedForGoal === 0 ? 0 : Math.round((completedForGoal / weeklyGoal) * barW);

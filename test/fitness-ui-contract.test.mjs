@@ -130,6 +130,39 @@ describe("fitness UI visual contract", () => {
     assert.doesNotMatch(completeR, /ICON_STYLE/);
   });
 
+  it("settings page uses calm fitness cards and direct vibration controls", () => {
+    const settings = read("page/settings/settings.js");
+    const settingsR = read("page/settings/settings.r.layout.js");
+    const settingsS = read("page/settings/settings.s.layout.js");
+
+    assert.match(settingsR, /OPTION_CARD_STYLE/);
+    assert.match(settingsR, /MODE_SEGMENT_STYLE/);
+    assert.match(settingsR, /MODE_SEGMENT_GAP/);
+    assert.match(settingsS, /OPTION_CARD_STYLE/);
+    assert.match(settingsS, /MODE_SEGMENT_STYLE/);
+
+    assert.match(settings, /_selectMode/);
+    assert.match(settings, /modeOptionTexts/);
+    assert.doesNotMatch(settings, /btn_prev\.png/);
+    assert.doesNotMatch(settings, /btn_next\.png/);
+    assert.doesNotMatch(settings, /_cycleMode/);
+  });
+
+  it("complete page uses generated fitness badge assets and native-size HOME button", () => {
+    const complete = read("page/complete/complete.js");
+    const completeR = read("page/complete/complete.r.layout.js");
+    const completeS = read("page/complete/complete.s.layout.js");
+
+    assert.match(complete, /icon_complete\.png/);
+    assert.match(complete, /icon_stop\.png/);
+    assert.match(completeR, /RESULT_BADGE_STYLE/);
+    assert.match(completeS, /RESULT_BADGE_STYLE/);
+    assert.equal(pxValue(completeR, "HOME_BTN_STYLE", "w"), 140);
+    assert.equal(pxValue(completeR, "HOME_BTN_STYLE", "h"), 55);
+    assert.equal(pxValue(completeS, "HOME_BTN_STYLE", "w"), 140);
+    assert.equal(pxValue(completeS, "HOME_BTN_STYLE", "h"), 55);
+  });
+
   it("home layout elements do not overlap on round screen", () => {
     const layout = read("page/home/home.r.layout.js");
     const progressY = pxValue(layout, "PROGRESS_LABEL_STYLE", "y");

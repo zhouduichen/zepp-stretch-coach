@@ -110,7 +110,8 @@ Page({
       const routine = recommendRoutine(sport.id, undefined, { routineType: "quick" });
       const dur = routine ? estimateDuration(routine.steps) : 0;
       const durMin = dur > 0 ? Math.ceil(dur / 60) : 0;
-      const durStr = durMin > 0 ? `~${durMin} min · Quick` : "";
+      const envLabel = sport.environment === "indoor" ? "室内" : "户外";
+      const durStr = durMin > 0 ? `${envLabel} · ~${durMin} min · Quick` : envLabel;
 
       group.createWidget(widget.TEXT, {
         ...Styles.ITEM_SUB_STYLE,
