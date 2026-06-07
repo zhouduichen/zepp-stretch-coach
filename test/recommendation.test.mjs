@@ -8,7 +8,8 @@ import assert from "node:assert";
 import {
   recommendRoutine,
   estimateDuration,
-  recommendFromRecentWorkout
+  recommendFromRecentWorkout,
+  getAvailableTypes
 } from "../core/recommendation.js";
 import { getExercise } from "../data/exercises.js";
 
@@ -36,6 +37,16 @@ describe("Recommendation Engine", () => {
       assert.strictEqual(result, null);
     });
 
+    it("should respect explicit routineType option", () => {
+      const quick = recommendRoutine("basketball", 3600, { routineType: "quick" });
+      assert.ok(quick, "Should find a quick routine");
+      assert.strictEqual(quick.routine.type, "quick");
+
+      const full = recommendRoutine("basketball", 600, { routineType: "full" });
+      assert.ok(full, "Should find a full routine");
+      assert.strictEqual(full.routine.type, "full");
+    });
+
     it("should resolve exercise durations", () => {
       const result = recommendRoutine("run-outdoor", 1200);
       const ex = getExercise(result.steps[0].exerciseId);
@@ -55,6 +66,19 @@ describe("Recommendation Engine", () => {
         { exerciseId: "standing-quad-stretch", side: "left", duration: 30 }
       ]);
       assert.strictEqual(duration, 33);
+    });
+  });
+
+  describe("getAvailableTypes", () => {
+    it("should return available routine types for a known sport", () => {
+      const types = getAvailableTypes("basketball");
+      assert.ok(types.includes("quick"));
+      assert.ok(types.includes("full"));
+    });
+
+    it("should return empty for unknown sport", () => {
+      const types = getAvailableTypes("unknown-sport");
+      assert.strictEqual(types.length, 0);
     });
   });
 
@@ -85,6 +109,25 @@ describe("Recommendation Engine", () => {
       assert.strictEqual(result.sportId, "run-outdoor");
       assert.strictEqual(result.routineType, "quick");
       assert.strictEqual(result.source, "fallback");
+    });
+
+    it("returns a quick default recommendation when no workout data exists", () => {
+      const result = recommendFromRecentWorkout(null);
+      assert.ok(result, "Should return recommendation even with null workout");
+      assert.strictEqual(result.routineType, "quick");
+      assert.strictEqual(result.hasWorkout, false);
+      assert.strictEqual(result.source, "fallback");
+      assert.strictEqual(result.sportId, "run-outdoor");
+    });
+
+    it("returns a quick default recommendation when workout has no duration", () => {
+      const result = recommendFromRecentWorkout({
+        hasWorkout: true,
+        sportId: "basketball",
+        durationSeconds: 0
+      });
+      assert.ok(result, "Should return recommendation");
+      assert.strictEqual(result.routineType, "quick");
     });
   });
 });

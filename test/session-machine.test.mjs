@@ -228,6 +228,47 @@ describe("SessionMachine", () => {
       const newRemaining = Math.ceil((machine.deadline - Date.now()) / 1000);
       assert.ok(Math.abs(newRemaining - savedRemaining) <= 1, "Remaining should be close to saved value");
     });
+
+    it("should not fire tick callbacks while paused", () => {
+      const steps = makeTestSteps();
+      const { events, callbacks } = collectCallbacks();
+      const machine = new SessionMachine(steps, callbacks);
+      machine.start();
+
+      machine.deadline = Date.now() - 100;
+      machine.substep = "active";
+      machine.currentSide = "left";
+      machine.state = STATE_ACTIVE;
+
+      const tickCountBefore = events.filter(e => e.type === "tick").length;
+
+      machine.pause();
+      machine.tick(); // tick while paused — should not fire callback
+
+      const tickCountAfter = events.filter(e => e.type === "tick").length;
+      assert.strictEqual(tickCountAfter, tickCountBefore, "No tick callback should fire while paused");
+    });
+
+    it("should handle multiple pause/resume cycles", () => {
+      const steps = makeTestSteps();
+      const machine = new SessionMachine(steps);
+      machine.start();
+
+      machine.deadline = Date.now() + 10000;
+      machine.substep = "active";
+      machine.currentSide = "left";
+      machine.state = STATE_ACTIVE;
+
+      for (let i = 0; i < 3; i++) {
+        machine.pause();
+        assert.strictEqual(machine.state, STATE_PAUSED, `Should be paused (cycle ${i})`);
+
+        machine.resume();
+        assert.strictEqual(machine.state, STATE_ACTIVE, `Should be active again (cycle ${i})`);
+      }
+
+      assert.ok(machine.deadline > Date.now(), "Deadline should still be in the future after resume");
+    });
   });
 
   describe("skip and end", () => {

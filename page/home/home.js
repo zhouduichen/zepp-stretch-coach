@@ -1,7 +1,7 @@
 import { createWidget, widget, event } from "@zos/ui";
 import * as Styles from "zosLoader:./home.[pf].layout.js";
 import * as Common from "zosLoader:./../common.[pf].layout.js";
-import { push } from "@zos/router";
+import { push, replace } from "@zos/router";
 import { Storage } from "../../services/storage";
 import { CATEGORIES } from "../../data/categories";
 import { SPORTS } from "../../data/sports";
@@ -14,11 +14,18 @@ Page({
 
   onInit() {
     Storage.migrate();
+
+    // First launch: show safety guidelines before home
+    const safetySeen = Storage.get(Storage.KEYS.SAFETY_SEEN, false);
+    if (!safetySeen) {
+      replace({ url: "/page/safety/safety", params: JSON.stringify({ firstLaunch: true }) });
+      return;
+    }
   },
 
   build() {
     this.completionCount = Storage.get(Storage.KEYS.COMPLETION_COUNT, 0);
-    const weeklyGoal = this.state.weeklyGoal || 3;
+    const weeklyGoal = Storage.get(Storage.KEYS.WEEKLY_GOAL, 3);
     const completedForGoal = Math.min(this.completionCount, weeklyGoal);
     const barW = Styles.PROGRESS_BG_STYLE.w;
     const pctWidth = completedForGoal === 0 ? 0 : Math.round((completedForGoal / weeklyGoal) * barW);

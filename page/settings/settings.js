@@ -18,13 +18,16 @@ Page({
     modeValueText: null,
     modeDescText: null,
     modeOptionRects: [],
-    modeOptionTexts: []
+    modeOptionTexts: [],
+    weeklyGoal: 3,
+    goalValueText: null
   },
 
   build() {
     this.state.currentMode = Storage.get(Storage.KEYS.VIBRATION_MODE, MODE_STANDARD);
     this.state.modeIndex = MODE_OPTIONS.findIndex(o => o.id === this.state.currentMode);
     if (this.state.modeIndex < 0) this.state.modeIndex = 0;
+    this.state.weeklyGoal = Storage.get(Storage.KEYS.WEEKLY_GOAL, 3);
 
     const group = createWidget(widget.GROUP, Common.SCREEN_STYLE);
 
@@ -71,8 +74,64 @@ Page({
       this._buildModeSegment(group, MODE_OPTIONS[i], i);
     }
 
+    // Weekly goal section
+    this._buildGoalSection(group);
+
     const backBtn = group.createWidget(widget.IMG, Styles.BACK_BTN_STYLE);
     backBtn.addEventListener(event.CLICK_UP, () => back());
+  },
+
+  _buildGoalSection(group) {
+    const goal = this.state.weeklyGoal;
+
+    group.createWidget(widget.FILL_RECT, {
+      ...Styles.GOAL_CARD_STYLE,
+      color: 0x141a15,
+      alpha: 225
+    });
+
+    group.createWidget(widget.TEXT, {
+      ...Styles.GOAL_LABEL_STYLE,
+      text: "每周目标"
+    });
+
+    // Minus button
+    const minusX = Styles.GOAL_CARD_STYLE.x + Styles.GOAL_CARD_STYLE.w - 110;
+    const valueX = minusX + Styles.GOAL_STEP_BTN_STYLE.w + 4;
+    const plusX = valueX + Styles.GOAL_VALUE_STYLE.w + 4;
+
+    const btnMinus = group.createWidget(widget.TEXT, {
+      x: minusX,
+      y: Styles.GOAL_CARD_STYLE.y + Math.floor((Styles.GOAL_CARD_STYLE.h - Styles.GOAL_STEP_BTN_STYLE.h) / 2),
+      ...Styles.GOAL_STEP_BTN_STYLE,
+      text: "-"
+    });
+    btnMinus.addEventListener(event.CLICK_UP, () => this._adjustGoal(-1));
+
+    this.state.goalValueText = group.createWidget(widget.TEXT, {
+      x: valueX,
+      y: Styles.GOAL_CARD_STYLE.y + Math.floor((Styles.GOAL_CARD_STYLE.h - Styles.GOAL_VALUE_STYLE.h) / 2),
+      ...Styles.GOAL_VALUE_STYLE,
+      text: `${goal}`
+    });
+
+    const btnPlus = group.createWidget(widget.TEXT, {
+      x: plusX,
+      y: Styles.GOAL_CARD_STYLE.y + Math.floor((Styles.GOAL_CARD_STYLE.h - Styles.GOAL_STEP_BTN_STYLE.h) / 2),
+      ...Styles.GOAL_STEP_BTN_STYLE,
+      text: "+"
+    });
+    btnPlus.addEventListener(event.CLICK_UP, () => this._adjustGoal(1));
+  },
+
+  _adjustGoal(delta) {
+    const newGoal = Math.max(1, Math.min(7, this.state.weeklyGoal + delta));
+    if (newGoal === this.state.weeklyGoal) return;
+    this.state.weeklyGoal = newGoal;
+    Storage.set(Storage.KEYS.WEEKLY_GOAL, newGoal);
+    if (this.state.goalValueText) {
+      this.state.goalValueText.setProperty(prop.MORE, { text: `${newGoal}` });
+    }
   },
 
   _buildModeSegment(group, opt, index) {

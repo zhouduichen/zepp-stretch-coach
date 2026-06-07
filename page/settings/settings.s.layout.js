@@ -94,9 +94,49 @@ export const MODE_SEGMENT_TEXT_STYLE = {
   text_style: 0
 };
 
+// Weekly goal section
+export const GOAL_CARD_STYLE = {
+  x: px(22),
+  y: px(278),
+  w: px(346),
+  h: px(54)
+};
+
+export const GOAL_LABEL_STYLE = {
+  x: px(44),
+  y: px(295),
+  w: px(96),
+  h: px(20),
+  color: 0xb6f640,
+  text_size: px(13),
+  align_h: align.LEFT,
+  align_v: align.CENTER_V,
+  text_style: 0
+};
+
+export const GOAL_STEP_BTN_STYLE = {
+  w: px(34),
+  h: px(34),
+  color: 0xffffff,
+  text_size: px(26),
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
+  text_style: 0
+};
+
+export const GOAL_VALUE_STYLE = {
+  w: px(46),
+  h: px(34),
+  color: 0xffffff,
+  text_size: px(26),
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
+  text_style: 0
+};
+
 export const BACK_BTN_STYLE = {
   x: px(390 / 2 - 100 / 2),
-  y: px(350),
+  y: px(360),
   w: px(100),
   h: px(50),
   src: "btn_back.png"

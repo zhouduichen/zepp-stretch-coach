@@ -93,14 +93,30 @@ Page({
     });
 
     const count = Storage.get(Storage.KEYS.COMPLETION_COUNT, 0);
+    const weeklyGoal = Storage.get(Storage.KEYS.WEEKLY_GOAL, 3);
+    const displayCount = Math.min(count, weeklyGoal);
     group.createWidget(widget.TEXT, {
       ...Styles.SUMMARY_VALUE_3_STYLE,
-      text: `${Math.min(count, 3)}/3`
+      text: `${displayCount}/${weeklyGoal}`
     });
     group.createWidget(widget.TEXT, {
       ...Styles.SUMMARY_LABEL_3_STYLE,
       text: "Week"
     });
+
+    // Weekly progress bar
+    const barW = Styles.WEEKLY_BAR_BG_STYLE.w;
+    const fillW = weeklyGoal > 0 ? Math.round((displayCount / weeklyGoal) * barW) : 0;
+    group.createWidget(widget.FILL_RECT, Styles.WEEKLY_BAR_BG_STYLE);
+    if (fillW > 0) {
+      group.createWidget(widget.FILL_RECT, {
+        x: Styles.WEEKLY_BAR_BG_STYLE.x,
+        y: Styles.WEEKLY_BAR_BG_STYLE.y,
+        w: fillW,
+        h: Styles.WEEKLY_BAR_BG_STYLE.h,
+        color: 0xb6f640
+      });
+    }
 
     const btnHome = group.createWidget(widget.IMG, Styles.HOME_BTN_STYLE);
     btnHome.addEventListener(event.CLICK_UP, () => {

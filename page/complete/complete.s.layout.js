@@ -135,6 +135,15 @@ export const SUMMARY_LABEL_3_STYLE = {
   text_style: 0
 };
 
+export const WEEKLY_BAR_BG_STYLE = {
+  x: px(50),
+  y: px(290),
+  w: px(290),
+  h: px(4),
+  color: 0x1e251f,
+  alpha: 215
+};
+
 export const HOME_BTN_STYLE = {
   x: px(125),
   y: px(330),

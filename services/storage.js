@@ -10,13 +10,14 @@ import { LocalStorage } from "@zos/storage";
 const localStorage = new LocalStorage();
 
 const PREFIX = "sc_";
-const CURRENT_SCHEMA_VERSION = 1;
+const CURRENT_SCHEMA_VERSION = 2;
 
 const KEYS = {
   SAFETY_SEEN: "safetySeen",
   VIBRATION_MODE: "vibrationMode",
   RECENT_ROUTINE_ID: "recentRoutineId",
   COMPLETION_COUNT: "completionCount",
+  WEEKLY_GOAL: "weeklyGoal",
   SCHEMA_VERSION: "schemaVersion",
   CONTENT_VERSION: "contentVersion"
 };
@@ -62,12 +63,19 @@ function migrate() {
     _ensureDefaults();
     set(KEYS.SCHEMA_VERSION, 1);
   }
+
+  if (storedVersion < 2) {
+    // V2 migration: add weeklyGoal default
+    if (get(KEYS.WEEKLY_GOAL, null) === null) set(KEYS.WEEKLY_GOAL, 3);
+    set(KEYS.SCHEMA_VERSION, 2);
+  }
 }
 
 function _ensureDefaults() {
   if (get(KEYS.SAFETY_SEEN, null) === null) set(KEYS.SAFETY_SEEN, false);
   if (get(KEYS.VIBRATION_MODE, null) === null) set(KEYS.VIBRATION_MODE, "standard");
   if (get(KEYS.COMPLETION_COUNT, null) === null) set(KEYS.COMPLETION_COUNT, 0);
+  if (get(KEYS.WEEKLY_GOAL, null) === null) set(KEYS.WEEKLY_GOAL, 3);
 }
 
 export const Storage = {

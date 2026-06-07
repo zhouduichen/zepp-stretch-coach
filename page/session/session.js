@@ -21,6 +21,7 @@ Page({
     timerText: null,
     progressText: null,
     pausedGroup: null,
+    _pausedVisible: false,
     lastAnimationKey: null,
     lastTickSecond: -1,
     lastIntervalTickSecond: -1
@@ -74,9 +75,45 @@ Page({
     const btnPause = group.createWidget(widget.IMG, Styles.PAUSE_BTN_STYLE);
     btnPause.addEventListener(event.CLICK_UP, () => this._togglePause());
 
+    // Create pause overlay once, hidden initially (alpha=0)
+    this._buildPauseOverlay();
+
     this.state.machine.start();
     this._updateDisplay();
     this._ensureTickTimer();
+  },
+
+  _buildPauseOverlay() {
+    const pausedGroup = createWidget(widget.GROUP, {
+      x: 0, y: 0, w: Styles.W, h: Styles.H, alpha: 0
+    });
+
+    pausedGroup.createWidget(widget.FILL_RECT, Styles.OVERLAY_BG_STYLE);
+    pausedGroup.createWidget(widget.TEXT, {
+      ...Styles.PAUSED_TEXT_STYLE,
+      text: "Paused"
+    });
+
+    const btnResume = pausedGroup.createWidget(widget.IMG, Styles.RESUME_BTN_STYLE);
+    btnResume.addEventListener(event.CLICK_UP, () => {
+      this.state.machine.resume();
+      this._hidePauseOverlay();
+    });
+
+    const btnSkip = pausedGroup.createWidget(widget.IMG, Styles.SKIP_BTN_STYLE);
+    btnSkip.addEventListener(event.CLICK_UP, () => {
+      this.state.machine.skip();
+      this._hidePauseOverlay();
+      this._updateDisplay();
+    });
+
+    const btnEnd = pausedGroup.createWidget(widget.IMG, Styles.END_BTN_STYLE);
+    btnEnd.addEventListener(event.CLICK_UP, () => {
+      this.state.machine.end();
+      this._hidePauseOverlay();
+    });
+
+    this.state.pausedGroup = pausedGroup;
   },
 
   _ensureTickTimer() {
@@ -101,41 +138,15 @@ Page({
   },
 
   _showPauseOverlay() {
-    if (this.state.pausedGroup) return;
-
-    const group = createWidget(widget.GROUP, { x: 0, y: 0, w: Styles.W, h: Styles.H });
-    group.createWidget(widget.FILL_RECT, Styles.OVERLAY_BG_STYLE);
-    group.createWidget(widget.TEXT, {
-      ...Styles.PAUSED_TEXT_STYLE,
-      text: "Paused"
-    });
-
-    const btnResume = group.createWidget(widget.IMG, Styles.RESUME_BTN_STYLE);
-    btnResume.addEventListener(event.CLICK_UP, () => {
-      this.state.machine.resume();
-      this._hidePauseOverlay();
-    });
-
-    const btnSkip = group.createWidget(widget.IMG, Styles.SKIP_BTN_STYLE);
-    btnSkip.addEventListener(event.CLICK_UP, () => {
-      this.state.machine.skip();
-      this._hidePauseOverlay();
-      this._updateDisplay();
-    });
-
-    const btnEnd = group.createWidget(widget.IMG, Styles.END_BTN_STYLE);
-    btnEnd.addEventListener(event.CLICK_UP, () => {
-      this.state.machine.end();
-      this._hidePauseOverlay();
-    });
-
-    this.state.pausedGroup = group;
+    if (!this.state.pausedGroup || this.state._pausedVisible) return;
+    this.state.pausedGroup.setProperty(prop.MORE, { alpha: 255 });
+    this.state._pausedVisible = true;
   },
 
   _hidePauseOverlay() {
-    if (!this.state.pausedGroup) return;
-    deleteWidget(this.state.pausedGroup);
-    this.state.pausedGroup = null;
+    if (!this.state.pausedGroup || !this.state._pausedVisible) return;
+    this.state.pausedGroup.setProperty(prop.MORE, { alpha: 0 });
+    this.state._pausedVisible = false;
   },
 
   _onStateChange(oldState, newState) {
@@ -147,7 +158,6 @@ Page({
   },
 
   _onExerciseChange(info) {
-    console.log(`Exercise: ${info.action} - ${info.exerciseId}`);
     this.state.lastTickSecond = -1;
     this.state.lastIntervalTickSecond = -1;
 
