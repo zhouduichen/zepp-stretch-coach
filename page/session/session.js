@@ -39,6 +39,8 @@ Page({
     this.state._lastSideLabel = null;
     this.state._lastTimerText = null;
     this.state._lastProgressText = null;
+    this.state._currentEx = null;
+    this.state._cachedTotalDuration = null;
 
     Vibration.setMode(Storage.get(Storage.KEYS.VIBRATION_MODE, "standard"));
 
@@ -160,6 +162,8 @@ Page({
   _onExerciseChange(info) {
     this.state.lastTickSecond = -1;
     this.state.lastIntervalTickSecond = -1;
+    this.state._currentEx = getExercise(info.exerciseId);
+    this.state._cachedTotalDuration = null;
 
     if (info.action === "prepare") {
       Vibration.clearAll();
@@ -198,7 +202,7 @@ Page({
       }
     }
 
-    this._updateDisplay();
+    this._updateDisplay(remaining, ctx);
   },
 
   _onComplete(info) {
@@ -224,20 +228,20 @@ Page({
           sportId: this._sportId || "",
           routineType: this._routineType || "quick",
           totalSteps: this.state.machine.steps.length,
-          totalDuration: this._computeTotalDuration()
+          totalDuration: this.state._cachedTotalDuration || this._computeTotalDuration()
         })
       });
     }, info.completed ? 1250 : 0);
   },
 
-  _updateDisplay() {
-    const ctx = this.state.machine.getContext();
+  _updateDisplay(remainingOverride, ctxOverride) {
+    const ctx = ctxOverride || this.state.machine.getContext();
     if (!ctx) return;
 
     const step = this.state.machine.steps[this.state.machine.currentStepIndex];
     if (!step) return;
 
-    const ex = getExercise(step.exerciseId);
+    const ex = this.state._currentEx || getExercise(step.exerciseId);
     if (this.state.exerciseNameText && ex) {
       const name = ex.name;
       if (this.state._lastExerciseName !== name) {
@@ -260,7 +264,9 @@ Page({
     }
 
     if (this.state.timerText) {
-      const remaining = Math.max(0, Math.ceil((this.state.machine.deadline - Date.now()) / 1000));
+      const remaining = remainingOverride !== undefined
+        ? Math.max(0, Math.ceil(remainingOverride))
+        : Math.max(0, Math.ceil((this.state.machine.deadline - Date.now()) / 1000));
       const text = String(remaining);
       if (this.state._lastTimerText !== text) {
         this.state._lastTimerText = text;
@@ -333,6 +339,7 @@ Page({
   },
 
   _computeTotalDuration() {
+    if (this.state._cachedTotalDuration !== null) return this.state._cachedTotalDuration;
     let total = 0;
     for (const step of this.state.machine.steps) {
       const dur = step.duration || 30;
@@ -342,6 +349,7 @@ Page({
         total += 3 + dur;
       }
     }
+    this.state._cachedTotalDuration = total;
     return total;
   },
 
